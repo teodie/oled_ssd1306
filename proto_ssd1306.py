@@ -194,6 +194,27 @@ for page in range(8):
 # segment remap
 send_command(0xA1)
 
+def display_text_hadd(text, column, page):
+    send_command(0x21)             # set column address 0 ~ 127
+    send_command(column)
+    send_command(127)
+
+    send_command(0x22)             # set start and end address 0 ~ 7
+    send_command(page)
+    send_command(0x07)
+    
+    for char in text:
+
+        send_data([0x00]) # blank column before the letter
+
+        char_code = ord(char) - 32  # Adjust the character code to the font data
+        for byte in range(5):
+            print("diplay ------------- char_code: ", char_code ," charc_code*5" ,(char_code * 5) ," byte: ", byte ,"       ", [FONT[char_code * 5 + byte]])
+            send_data([FONT[char_code * 5 + byte]])
+
+        send_data([0x00]) # blank column after the letter
+
+   
 
 # Function to display text at a specific position
 def display_text(text, page, column):
@@ -212,13 +233,17 @@ def display_text(text, page, column):
 
         send_data([0x00]) # blank column after the letter
 
-# Display "Hello, World!" at page 2, column 0
-for i in range(100):
-    display_text(f"count: {i}", 0, 0)
-    time.sleep(1)
+# Test for horizontal addressing
+display_text_hadd("Hi its working? yes! its is haha can it occupie letters below?", 0x00, 0x00)
+
+#display_text("count: ", 0, 0)
+#for i in range(100):
+#    display_text(f"{i}", 0, 50)
+#    time.sleep(1)
+
 #display_text("hello there!", 0, 0)
-display_text("abcdefghijklm", 2, 0)
-display_text("nopqrstuvwxyz", 3, 0)
+#display_text("abcdefghijklm", 2, 0)
+#display_text("nopqrstuvwxyz", 3, 0)
 
 time.sleep(5)
 
