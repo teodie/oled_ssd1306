@@ -213,7 +213,10 @@ def display_text(text, page, column):
         send_data([0x00]) # blank column after the letter
 
 # Display "Hello, World!" at page 2, column 0
-display_text("hello there!", 0, 0)
+for i in range(100):
+    display_text(f"count: {i}", 0, 0)
+    time.sleep(1)
+#display_text("hello there!", 0, 0)
 display_text("abcdefghijklm", 2, 0)
 display_text("nopqrstuvwxyz", 3, 0)
 
