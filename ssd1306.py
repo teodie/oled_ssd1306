@@ -73,7 +73,7 @@ def send_command(*cmd):
 
 
 def send_data(data):
-    max_chunk_size = 32
+    max_chunk_size = 30         # can be 32bytes but error prone so set lower to be safe
     for i in range(0, len(data), max_chunk_size):
         chunk = data[i:i + max_chunk_size]
         
@@ -90,7 +90,6 @@ def clear_display():
             0x10)             # set the higher column address
         # this line will display 0 to all column in the page
         send_data([0x00] * 128)
-
 
 
 # Function to display text at a specific position
@@ -111,12 +110,22 @@ def display_text(text, page, column):
         
         print(char, " has been sent")
 
+def horizontal_scroll(start_page, end_page, frame = 0x00, lr=True):
+    direction = 0x26
+    if not lr:
+        direction = 0x27
+    
+    #             off, hor,       dum,     start,   frame,   end,    dum ,  dum , activate 
+    send_command(0x2E, direction, 0x00, start_page, frame, end_page, 0x00,  0xFF,   0x2F)
 
-Initialize_Display()
+
+
 clear_display()
 
 #send_command(0xB0, 0x00, 0x14)
 #send_data([0xAA]*12)
 
-display_text("HELLO WORLD!!", 0, 123)
+display_text("HELLO WORLD!!", 0, 20)
+display_text("FIXED", 2, 30)
+horizontal_scroll(0, 0, lr=False)
 print("turning off")
