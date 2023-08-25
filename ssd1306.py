@@ -14,6 +14,9 @@ SET_DISPLAY_OFF = 0xAE
 
 """Addressing Setting Command"""
 SET_MEMORY_ADDRESSING_MODE = 0x20        # A(0x00 ~ 0x02) HORIZONTAL | VERTICAL | PAGE ADDRESSING MODE 
+HORIZONTAL = 0x00
+VERTICAL = 0x01
+PAGE = 0x02
 
 """Page Addressing Mode 0x02"""
 SET_LOWER_COLUMN_START_ADDRESS = 0x00    # 0x00 ~ 0x0F
@@ -50,7 +53,7 @@ def Initialize_Display():
         SET_DISPLAY_OFF_SET, 0x00,           # -----------------
         SET_DISPLAY_START_LINE,              # -----------------
         ENABLE_CHARGE_PUMP, 0x14,
-        SET_MEMORY_ADDRESSING_MODE, 0x00,    # ----------------- Set to horizontal address
+        SET_MEMORY_ADDRESSING_MODE, PAGE,    # ----------------- Set addressing mode
         (SET_SEGMENT_RE_MAP | 0x01),         # ----------------- 0xA1 normal no remap
         (SET_COM_OUTPUT_SCAN | 0x08),        # ----------------- Set to 0xC8
         SET_COM_PINS, 0x12,                  # ----------------- may be critical
@@ -89,11 +92,12 @@ def clear_display():
         send_data([0x00] * 128)
 
 
+
 # Function to display text at a specific position
 def display_text(text, page, column):
-    send_command(0xB0 + page)      # Set current page
-    send_command(column & 0x00)    # Set lower column address
-    send_command(0x10 + (column >> 4))  # Set higher column address
+    send_command(0xB0 + page,                                   # Set current page
+                 column & 0x0F,                                 # Set lower column address
+                 ((column & 0xF0) >> 4) | 0x10 )                # Set higher column address
     
     for char in text:
 
@@ -107,17 +111,12 @@ def display_text(text, page, column):
         
         print(char, " has been sent")
 
-def scroll_hoz():
-    interval = 0x00
-    start_page = 0x00 
-    end_page = 0x01
-
-    send_command(0x2E, 0x26, 0x00, start_page, interval, end_page, 0x2F)
-    print("scroll activated!")
 
 Initialize_Display()
 clear_display()
 
+#send_command(0xB0, 0x00, 0x14)
+#send_data([0xAA]*12)
 
-display_text("HELLO WORLD!!", 0, 0)
+display_text("HELLO WORLD!!", 0, 123)
 print("turning off")
