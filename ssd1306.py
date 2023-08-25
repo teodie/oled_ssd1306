@@ -42,23 +42,6 @@ NOP = 0xE3                               # NO OPERATION
 ENABLE_CHARGE_PUMP = 0x8D
 
 
-def display_initialization():
-    """ Initialization According To The Datasheet """
-    send_command(
-        SET_MULTIPLEX_RATIO,
-        SET_DISPLAY_OFF_SET, 0x00,
-        SET_DISPLAY_START_LINE,
-        SET_SEGMENT_RE_MAP,
-        SET_COM_OUTPUT_SCAN,
-        SET_COM_PINS, 0x02,
-        SET_CONTRAST_CONTROL, 0x7F,
-        ENTIRE_DISPLAY_ON,
-        SET_NORMAL_INVERSE_DISPLAY,
-        SET_DISPLAY_CLOCK, 0x80,
-        ENABLE_CHARGE_PUMP, 0x14,
-        SET_DISPLAY_ON
-        )
-
 def Initialize_Display():
     send_command(
         SET_DISPLAY_OFF,
@@ -79,25 +62,6 @@ def Initialize_Display():
         SET_DISPLAY_ON
         )
 
-
-def display_init():
-    """Initializaiton from Adafruit"""
-    send_command(
-        SET_DISPLAY_OFF,
-        SET_DISPLAY_CLOCK, 0x08,
-        SET_MULTIPLEX_RATIO, 0x3F,        # need to look this up
-        SET_DISPLAY_OFF_SET, 0x00,
-        SET_DISPLAY_START_LINE,
-        ENABLE_CHARGE_PUMP, 0x14,
-        SET_MEMORY_ADDRESSING_MODE, 0x00,  # Horizontal addressing mode
-        (SET_SEGMENT_RE_MAP | 0x01),
-        (SET_COM_OUTPUT_SCAN | 0x08),      # Set to C8
-        SET_COM_PINS, 0x12,
-        SET_CONTRAST_CONTROL, 0xCF,
-        SET_PRE_CHARGE_PERIOD, 0x22,       # 0xF1
-        SET_VCOM_DESELECT_LEVEL, 0x20,      # not sure on this doesnt make sense
-        ENTIRE_DISPLAY_ON
-        )
 
 def send_command(*cmd):
     assert len(cmd) <= 32, f"max allowed is 32 byte you send {len(cmd)}"
@@ -151,12 +115,9 @@ def scroll_hoz():
     send_command(0x2E, 0x26, 0x00, start_page, interval, end_page, 0x2F)
     print("scroll activated!")
 
-#display_init()
-#display_initialization()
 Initialize_Display()
 clear_display()
 
 
 display_text("HELLO WORLD!!", 0, 0)
-sleep(10)
 print("turning off")
