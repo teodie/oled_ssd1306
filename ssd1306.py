@@ -65,6 +65,27 @@ def Initialize_Display():
         SET_DISPLAY_ON
         )
 
+def Init_one():
+    send_command(
+        SET_DISPLAY_OFF,
+        SET_MEMORY_ADDRESSING_MODE, PAGE,    # ----------------- Set addressing mode
+        (SET_COM_OUTPUT_SCAN | 0x08),        # ----------------- Set to 0xC8
+        SET_DISPLAY_START_LINE,              # -----------------
+        SET_CONTRAST_CONTROL, 0xCF,
+        (SET_SEGMENT_RE_MAP | 0x01),         # ----------------- 0xA1 normal no remap
+        SET_NORMAL_INVERSE_DISPLAY,
+        SET_MULTIPLEX_RATIO, 0x3F,
+        SET_DISPLAY_OFF_SET, 0x00,           # -----------------
+        SET_DISPLAY_CLOCK, 0x80,
+        SET_PRE_CHARGE_PERIOD, 0x22,         # 0x22 or 0xF1
+        SET_COM_PINS, 0x12,                  # ----------------- may be critical
+        SET_VCOM_DESELECT_LEVEL, 0x40,
+        ENABLE_CHARGE_PUMP, 0x14,
+        ENTIRE_DISPLAY_ON,
+        SET_DISPLAY_ON
+        )
+
+
 
 def send_command(*cmd):
     assert len(cmd) <= 32, f"max allowed is 32 byte you send {len(cmd)}"
@@ -119,7 +140,8 @@ def horizontal_scroll(start_page, end_page, frame = 0x00, lr=True):
     send_command(0x2E, direction, 0x00, start_page, frame, end_page, 0x00,  0xFF,   0x2F)
 
 
-
+Initialize_Display()
+#Init_one()
 clear_display()
 
 #send_command(0xB0, 0x00, 0x14)
