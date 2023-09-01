@@ -1,6 +1,7 @@
 from smbus2 import SMBus, i2c_msg
 from ascii import ascii
 from time import sleep
+import random
 
 port = 1         # i2c port beind used
 SA = 0x3C # Change this if 0x3D is used instead
@@ -44,6 +45,14 @@ SET_VCOM_DESELECT_LEVEL = 0xDB           # A(0x00h ~ 0x30h)
 NOP = 0xE3                               # NO OPERATION
 ENABLE_CHARGE_PUMP = 0x8D
 
+"""Deactivate Scroll"""
+DEACTIVATE_SCROLL = 0x2E
+
+SSD1306_COLUMNS = 128
+SSD1306_ROWS = 64
+""" Vram to not overide prev drawing """
+VRAM = [[0] * SSD1306_COLUMNS for _ in range(SSD1306_ROWS // 8)]
+
 
 def Initialize_Display():
     send_command(
@@ -53,37 +62,19 @@ def Initialize_Display():
         SET_DISPLAY_OFF_SET, 0x00,           # -----------------
         SET_DISPLAY_START_LINE,              # -----------------
         ENABLE_CHARGE_PUMP, 0x14,
-        SET_MEMORY_ADDRESSING_MODE, PAGE,    # ----------------- Set addressing mode
+        SET_MEMORY_ADDRESSING_MODE, HORIZONTAL,    # ----------------- Set addressing mode
         (SET_SEGMENT_RE_MAP | 0x01),         # ----------------- 0xA1 normal no remap
         (SET_COM_OUTPUT_SCAN | 0x08),        # ----------------- Set to 0xC8
         SET_COM_PINS, 0x12,                  # ----------------- may be critical
         SET_CONTRAST_CONTROL, 0xCF,
         SET_PRE_CHARGE_PERIOD, 0xF1,
         SET_VCOM_DESELECT_LEVEL, 0x40,
+        DEACTIVATE_SCROLL,                   # ----------------- Deactivate Scroll 
         ENTIRE_DISPLAY_ON,
         SET_NORMAL_INVERSE_DISPLAY,
         SET_DISPLAY_ON
         )
 
-def Init_one():
-    send_command(
-        SET_DISPLAY_OFF,
-        SET_MEMORY_ADDRESSING_MODE, PAGE,    # ----------------- Set addressing mode
-        (SET_COM_OUTPUT_SCAN | 0x08),        # ----------------- Set to 0xC8
-        SET_DISPLAY_START_LINE,              # -----------------
-        SET_CONTRAST_CONTROL, 0xCF,
-        (SET_SEGMENT_RE_MAP | 0x01),         # ----------------- 0xA1 normal no remap
-        SET_NORMAL_INVERSE_DISPLAY,
-        SET_MULTIPLEX_RATIO, 0x3F,
-        SET_DISPLAY_OFF_SET, 0x00,           # -----------------
-        SET_DISPLAY_CLOCK, 0x80,
-        SET_PRE_CHARGE_PERIOD, 0x22,         # 0x22 or 0xF1
-        SET_COM_PINS, 0x12,                  # ----------------- may be critical
-        SET_VCOM_DESELECT_LEVEL, 0x40,
-        ENABLE_CHARGE_PUMP, 0x14,
-        ENTIRE_DISPLAY_ON,
-        SET_DISPLAY_ON
-        )
 
 
 
@@ -114,7 +105,7 @@ def clear_display():
 
 
 # Function to display text at a specific position
-def display_text(text, page, column):
+def display_p(text, page, column):
     send_command(0xB0 + page,                                   # Set current page
                  column & 0x0F,                                 # Set lower column address
                  ((column & 0xF0) >> 4) | 0x10 )                # Set higher column address
@@ -131,6 +122,25 @@ def display_text(text, page, column):
         
         print(char, " has been sent")
 
+def display_h(x, y, value):
+    assert x <= 128 , "x value can't be higher on 128"
+    assert y <= 64, "y value can't be higher than 64"
+
+    page = y >> 3
+    #print(page)
+    send_command(
+            SET_COLUMN_ADDRESS, x, x,
+            SET_PAGE_ADDRESS_VH_MODE, page, page)
+    #print(hex(value << ( y & 0x07) ))
+    if value:
+        VRAM[page][x] |= 0x01 << (y & 0x07)
+    else:
+        VRAM[page][x] &= ~(0x01 << (y & 0x07))
+    
+    print([VRAM[page][x]])
+    send_data([VRAM[page][x]])
+    #send_data([value << (y & 0x07)])
+
 def horizontal_scroll(start_page, end_page, frame = 0x00, lr=True):
     direction = 0x26
     if not lr:
@@ -144,10 +154,25 @@ Initialize_Display()
 #Init_one()
 clear_display()
 
+display_h(64,32,1)
+
+#for x in range(128):
+#    for y in range(64):
+#        display_h(x,y,random.randint(0,1))
+
+#sleep(1)
+
+#for y in range(64):
+#    for x in range(128):
+#        display_h(x,y,1)
+
+#display_h(10,20,1)
 #send_command(0xB0, 0x00, 0x14)
 #send_data([0xAA]*12)
 
-display_text("HELLO WORLD!!", 0, 20)
-display_text("FIXED", 2, 30)
-horizontal_scroll(0, 0, lr=False)
+
+#display_text("123456789012345678", 0, 0)
+#display_text("HELLO WORLD!!", 0, 20)
+#display_text("FIXED", 2, 30)
+#horizontal_scroll(0, 0, lr=False)
 print("turning off")
