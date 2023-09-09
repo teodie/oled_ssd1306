@@ -156,15 +156,15 @@ clear_display()
 
 display_h(64,32,1)
 
-#for x in range(128):
-#    for y in range(64):
-#        display_h(x,y,random.randint(0,1))
+for x in range(128):
+    for y in range(64):
+        display_h(x,y,random.randint(0,1))
 
-#sleep(1)
+sleep(1)
 
-#for y in range(64):
-#    for x in range(128):
-#        display_h(x,y,1)
+for y in range(64):
+    for x in range(128):
+        display_h(x,y,1)
 
 #display_h(10,20,1)
 #send_command(0xB0, 0x00, 0x14)
